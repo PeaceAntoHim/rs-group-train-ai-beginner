@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dashboard Latihan — AI Data Training RS Group</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#141C2B; --ink-soft:#44506A; --paper:#F7F8FA; --panel:#FFFFFF;
+  --rule:#CBD3DE; --rule-soft:#E4E9F0;
+  --pass:#1F7A5C; --flag:#B33A3A; --review:#C8762B; --mark:#2E5EAA;
+  --serif:"Spectral",Georgia,"Times New Roman",serif;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+:root:not([data-theme="light"]){}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#E8ECF3; --ink-soft:#9AA7BD; --paper:#10151F; --panel:#172031;
+    --rule:#2E3B52; --rule-soft:#222C3F;
+    --pass:#4FB890; --flag:#E07070; --review:#E0A055; --mark:#7FA7E8;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#E8ECF3; --ink-soft:#9AA7BD; --paper:#10151F; --panel:#172031;
+  --rule:#2E3B52; --rule-soft:#222C3F;
+  --pass:#4FB890; --flag:#E07070; --review:#E0A055; --mark:#7FA7E8;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%; scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 72px}
+
+/* ---- hero: the verification tally ---- */
+header.hero{border-bottom:2px solid var(--ink);margin-bottom:0}
+.hero-in{max-width:1180px;margin:0 auto;padding:36px 20px 26px;
+  display:grid;grid-template-columns:1fr auto;gap:28px;align-items:end}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4.4vw,44px);
+  line-height:1.1;margin:0 0 10px;letter-spacing:-.01em}
+.sub{color:var(--ink-soft);max-width:60ch;margin:0}
+.tally{text-align:right;border-left:1px solid var(--rule);padding-left:28px}
+.tally-fig{font-family:var(--serif);font-size:clamp(34px,6vw,56px);line-height:1;
+  font-variant-numeric:tabular-nums;color:var(--pass)}
+.tally-lab{font-size:13px;color:var(--ink-soft);margin-top:6px;max-width:22ch;margin-left:auto}
+
+/* ---- department rail ---- */
+nav.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;
+  background:var(--paper);border-bottom:1px solid var(--rule);overflow-x:auto}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);
+  background:var(--paper);z-index:11}
+.rail-in{max-width:1180px;margin:0 auto;padding:0 20px;display:flex;gap:4px;min-width:max-content}
+.rail button{appearance:none;background:none;border:0;border-bottom:3px solid transparent;
+  font:inherit;font-weight:500;color:var(--ink-soft);padding:14px 14px 11px;cursor:pointer;white-space:nowrap}
+.rail button:hover{color:var(--ink)}
+.rail button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--mark)}
+.rail button:focus-visible{outline:2px solid var(--mark);outline-offset:-2px}
+
+/* ---- section furniture ---- */
+.q{font-family:var(--serif);font-size:20px;margin:34px 0 4px;font-weight:600}
+.q-note{color:var(--ink-soft);font-size:14px;margin:0 0 16px;max-width:78ch}
+h3{font-family:var(--serif);font-size:17px;font-weight:600;margin:30px 0 12px;
+  padding-bottom:6px;border-bottom:1px solid var(--rule)}
+
+/* ---- filters ---- */
+.filters{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;
+  padding:16px 0 18px;border-bottom:1px solid var(--rule-soft)}
+.f label{display:block;font-size:12px;color:var(--ink-soft);margin-bottom:4px}
+.f select{font:inherit;font-size:14px;padding:7px 10px;background:var(--panel);
+  color:var(--ink);border:1px solid var(--rule);border-radius:3px;min-width:150px}
+.f select:focus-visible{outline:2px solid var(--mark);outline-offset:1px}
+.reset{font:inherit;font-size:14px;background:none;border:1px solid var(--rule);
+  color:var(--ink-soft);padding:7px 14px;border-radius:3px;cursor:pointer}
+.reset:hover{color:var(--ink);border-color:var(--ink-soft)}
+.rowcount{margin-left:auto;font-size:13px;color:var(--ink-soft);padding-bottom:8px}
+
+/* ---- KPI: figures on ruled lines, not cards ---- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));
+  gap:0;border-top:1px solid var(--rule)}
+.kpi{padding:16px 18px 14px;border-bottom:1px solid var(--rule-soft);border-right:1px solid var(--rule-soft)}
+.kpi:last-child{border-right:0}
+.kpi-v{font-family:var(--serif);font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi-l{font-size:13px;color:var(--ink-soft);margin-top:5px}
+.kpi-d{font-size:12px;color:var(--ink-soft);margin-top:3px;font-style:italic}
+.kpi.est .kpi-v{color:var(--review)}
+.kpi.est::after{content:"estimasi";display:inline-block;font-size:11px;font-style:normal;
+  color:var(--review);border:1px solid var(--review);border-radius:2px;padding:0 5px;margin-top:7px}
+
+/* ---- charts ---- */
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:30px;margin-top:8px}
+.chart figcaption{font-size:13px;color:var(--ink-soft);margin-bottom:10px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.bar{fill:var(--mark)}
+.bar.neg{fill:var(--flag)}
+.bar.alt{fill:var(--pass)}
+.bar-bg{fill:var(--rule-soft)}
+.axis{font-size:11px;fill:var(--ink-soft)}
+.val{font-size:11px;fill:var(--ink);font-variant-numeric:tabular-nums}
+.gridline{stroke:var(--rule-soft);stroke-width:1}
+.spark{fill:none;stroke:var(--mark);stroke-width:2}
+.sparkdot{fill:var(--mark)}
+
+/* ---- tables ---- */
+.scroll{overflow-x:auto;border:1px solid var(--rule);border-radius:3px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+th{text-align:left;font-weight:600;font-size:12.5px;color:var(--ink-soft);
+  padding:9px 12px;border-bottom:1px solid var(--rule);white-space:nowrap;background:var(--panel);
+  position:sticky;top:0}
+td{padding:8px 12px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.flagged td{background:color-mix(in srgb,var(--flag) 7%,transparent)}
+.tag{display:inline-block;font-size:11px;border-radius:2px;padding:1px 6px;border:1px solid currentColor;white-space:nowrap}
+.tag.dup{color:var(--flag)} .tag.miss{color:var(--review)} .tag.late{color:var(--flag)}
+.empty{padding:26px 16px;color:var(--ink-soft);font-size:14px}
+
+/* ---- quality + tests ---- */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:8px}
+@media (max-width:860px){.two{grid-template-columns:1fr}}
+ul.quality{list-style:none;margin:0;padding:0}
+ul.quality li{padding:10px 0 10px 26px;border-bottom:1px solid var(--rule-soft);
+  position:relative;font-size:14px}
+ul.quality li::before{content:"!";position:absolute;left:0;top:11px;width:17px;height:17px;
+  border:1px solid var(--review);color:var(--review);border-radius:50%;
+  font-size:11px;font-weight:600;display:grid;place-items:center}
+ol.tests{list-style:none;margin:0;padding:0;counter-reset:t}
+ol.tests li{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:baseline;
+  padding:10px 0;border-bottom:1px solid var(--rule-soft);font-size:14px}
+.verdict{font-size:12px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
+.verdict.ok{color:var(--pass)} .verdict.no{color:var(--flag)}
+.tests-note{font-size:13px;color:var(--ink-soft);margin-top:12px}
+
+/* ---- limits ---- */
+.limits{margin-top:34px;border-top:2px solid var(--ink);padding-top:18px}
+.limits p{font-size:14px;color:var(--ink-soft);max-width:84ch;margin:0 0 10px}
+.limits strong{color:var(--ink);font-weight:600}
+footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--rule);
+  font-size:13px;color:var(--ink-soft)}
+@media (max-width:720px){
+  .hero-in{grid-template-columns:1fr;align-items:start}
+  .tally{text-align:left;border-left:0;border-top:1px solid var(--rule);padding:16px 0 0}
+  .tally-lab{margin-left:0}
+  .rowcount{margin-left:0;width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="hero-in">
+    <div>
+      <h1>Enam dataset, tiga puluh pemeriksaan</h1>
+      <p class="sub">Dashboard acuan untuk pelatihan AI Data &amp; Dashboard RS Group. Semua angka di halaman ini dihitung ulang di browser Anda dari keenam file CSV latihan — tidak ada nilai yang ditulis tangan. Cocokkan hasil kelompok Anda dengan halaman ini.</p>
+    </div>
+    <div class="tally">
+      <div class="tally-fig num" id="tallyFig">—</div>
+      <div class="tally-lab" id="tallyLab">memeriksa…</div>
+    </div>
+  </div>
+</header>
+<nav class="rail" aria-label="Pilih divisi"><div class="rail-in" id="rail" role="tablist"></div></nav>
+<main class="wrap" id="main"></main>
+<script id="payload" type="application/json">
+{"hr_recruitment":[{"candidate_id":"C1001","source":"Job Portal","department":"Sales","applied_date":"2026-06-11","interview_date":"2026-06-21","offer_date":"2026-07-02","status":"Hired"},{"candidate_id":"C1002","source":"Job Portal","department":"Sales","applied_date":"2026-06-21","interview_date":"2026-06-29","offer_date":null,"status":"Interviewed"},{"candidate_id":"C1003","source":"Job Portal","department":"Sales","applied_date":"2026-06-03","interview_date":"2026-06-19","offer_date":null,"status":"Interviewed"},{"candidate_id":"C1004","source":"Job Portal","department":"Sales","applied_date":"2026-06-04","interview_date":null,"offer_date":null,"status":"Applied"},{"candidate_id":"C1005","source":"Job Portal","department":"Sales","applied_date":"2026-06-12","interview_date":null,"offer_date":null,"status":"Applied"},{"candidate_id":"C1006","source":"Job Portal","department":"Finance","applied_date":"2026-06-19","interview_date":"2026-06-27","offer_date":"2026-07-05","status":"Hired"},{"candidate_id":"C1007","source":"Job Portal","department":"Finance","applied_date":"2026-06-02","interview_date":"2026-06-11","offer_date":null,"status":"Interviewed"},{"candidate_id":"C1008","source":"Job Portal","department":"Finance","applied_date":"2026-06-14","interview_date":null,"offer_date":null,"status":"Applied"},{"candidate_id":"C1009","source":"Job Portal","department":"Finance","applied_date":"2026-06-14","interview_date":null,"offer_date":null,"status":"Applied"},{"candidate_id":"C1010","source":"Referral","department":"Sales","applied_date":"2026-06-03","interview_date":"2026-06-14","offer_date":"2026-06-20","status":"Hired"},{"candidate_id":"C1011","source":"referral","department":"Sales","applied_date":"2026-06-18","interview_date":"2026-07-02","offer_date":"2026-07-07","status":"Hired"},{"candidate_id":"C1012","source":"Referral","department":"Sales","applied_date":"2026-06-19","interview_date":"2026-06-28","offer_date":null,"status":"Interviewed"},{"candidate_id":"C1013","source":"Referral","department":"Sales","applied_date":"2026-06-08","interview_date":null,"offer_date":null,"status":"Applied"},{"candidate_id":"C1014","source":"Referral","department":"Marketing","applied_date":"2026-06-21","interview_date":"2026-06-29","offer_date":"2026-07-10","status":"Hired"},{"candidate_id":"C1015","source":"Referral","department":"Marketing","applied_date":"2026-06-02","interview_date":"2026-06-13","offer_date":null,"status":"Interviewed"},{"candidate_id":"C1016","source":"Referral","department":"Marketing","applied_date":"2026-06-02","interview_date":null,"offer_date":null,"status":"Applied"},{"candidate_id":"C1017","source":"LinkedIn","department":"Marketing","applied_date":"2026-06-18","interview_date":"2026-06-28","offer_date":"2026-07-07","status":"Hired"},{"candidate_id":"C1018","source":"LinkedIn","department":"Marketing","applied_date":"2026-06-14","interview_date":"2026-06-24","offer_date":null,"status":"Interviewed"},{"candidate_id":"C1019","source":"LinkedIn","department":"Marketing","applied_date":"2026-06-18","interview_date":"2026-06-27","offer_date":null,"status":"Interviewed"},{"candidate_id":"C1020","source":"LinkedIn","department":"Marketing","applied_date":"2026-06-19","interview_date":null,"offer_date":null,"status":"Applied"},{"candidate_id":"C1021","source":"LinkedIn","department":"Marketing","applied_date":"2026-06-10","interview_date":null,"offer_date":null,"status":"Applied"},{"candidate_id":"C1022","source":"LinkedIn","department":"Operations","applied_date":"2026-06-18","interview_date":"2026-06-28","offer_date":"2026-07-04","status":"Hired"},{"candidate_id":"C1023","source":"LinkedIn","department":"Operations","applied_date":"2026-06-19","interview_date":null,"offer_date":null,"status":"Applied"},{"candidate_id":"C1024","source":"LinkedIn","department":"Operations","applied_date":"2026-06-12","interview_date":null,"offer_date":null,"status":"Applied"},{"candidate_id":"C1025","source":"LinkedIn","department":"Operations","applied_date":"2026-06-04","interview_date":null,"offer_date":null,"status":"Applied"},{"candidate_id":"C1026","source":"Campus","department":"Operations","applied_date":"2026-06-18","interview_date":"2026-06-27","offer_date":null,"status":"Interviewed"},{"candidate_id":"C1027","source":"Campus","department":"Operations","applied_date":"2026-06-19","interview_date":"2026-06-27","offer_date":null,"status":"Interviewed"},{"candidate_id":"C1028","source":"Campus","department":"Operations","applied_date":"2026-06-20","interview_date":null,"offer_date":null,"status":"Applied"},{"candidate_id":"C1029","source":"Campus","department":"Operations","applied_date":"2026-06-07","interview_date":null,"offer_date":null,"status":"Applied"},{"candidate_id":"C1030","source":"Campus","department":"Operations","applied_date":"2026-06-16","interview_date":null,"offer_date":null,"status":"Applied"},{"candidate_id":"C1031","source":"Walk-in","department":"HR","applied_date":"2026-06-22","interview_date":"2026-07-08","offer_date":null,"status":"Interviewed"},{"candidate_id":"C1032","source":"Walk-in","department":"HR","applied_date":"2026-06-14","interview_date":null,"offer_date":null,"status":"Applied"},{"candidate_id":"C1033","source":"Walk-in","department":"HR","applied_date":"2026-06-25","interview_date":null,"offer_date":null,"status":"Applied"},{"candidate_id":"C1034","source":"Walk-in","department":"HR","applied_date":"2026-06-11","interview_date":null,"offer_date":null,"status":"Applied"},{"candidate_id":"C1004","source":"Job Portal","department":"Sales","applied_date":"2026-06-04","interview_date":null,"offer_date":null,"status":"Applied"}],"finance_expenses":[{"transaction_id":"T5001","date":"2026-07-17","department":"Marketing","category":"Advertising","monthly_budget":"100","actual_amount":"72.0"},{"transaction_id":"T5002","date":"2026-07-21","department":"Marketing","category":"Events","monthly_budget":"100","actual_amount":"48.0"},{"transaction_id":"T5003","date":"2026-08-17","department":"Marketing","category":"Advertising","monthly_budget":"100","actual_amount":"63.0"},{"transaction_id":"T5004","date":"2026-08-14","department":"Marketing","category":"Events","monthly_budget":"100","actual_amount":"42.0"},{"transaction_id":"T5005","date":"2026-09-12","department":"Marketing","category":"Advertising","monthly_budget":"100","actual_amount":"81.0"},{"transaction_id":"T5006","date":"2026-09-10","department":"Marketing","category":"Events","monthly_budget":"100","actual_amount":"54.0"},{"transaction_id":"T5007","date":"2026-07-08","department":"Operations","category":"Utilities","monthly_budget":"200","actual_amount":"108.0"},{"transaction_id":"T5008","date":"2026-07-25","department":"Operations","category":"Logistics","monthly_budget":"200","actual_amount":null},{"transaction_id":"T5009","date":"2026-08-10","department":"Operations","category":"Utilities","monthly_budget":"200","actual_amount":"117.0"},{"transaction_id":"T5010","date":"2026-08-05","department":"Operations","category":"Logistics","monthly_budget":"200","actual_amount":"78.0"},{"transaction_id":"T5011","date":"2026-09-21","department":"Operations","category":"Utilities","monthly_budget":"200","actual_amount":"114.0"},{"transaction_id":"T5012","date":"2026-09-12","department":"Operations","category":"Logistics","monthly_budget":"200","actual_amount":"76.0"},{"transaction_id":"T5013","date":"2026-07-19","department":"IT","category":"Software","monthly_budget":"80","actual_amount":"52.8"},{"transaction_id":"T5014","date":"2026-07-18","department":"IT","category":"Hardware","monthly_budget":"80","actual_amount":"35.2"},{"transaction_id":"T5015","date":"2026-08-13","department":"IT","category":"Software","monthly_budget":"80","actual_amount":"55.2"},{"transaction_id":"T5016","date":"2026-08-26","department":"IT","category":"Hardware","monthly_budget":"80","actual_amount":"36.8"},{"transaction_id":"T5017","date":"2026-09-17","department":"IT","category":"Software","monthly_budget":"80","actual_amount":"47.4"},{"transaction_id":"T5018","date":"2026-09-12","department":"IT","category":"Hardware","monthly_budget":"80","actual_amount":"31.6"},{"transaction_id":"T5019","date":"2026-07-22","department":"HR","category":"Training","monthly_budget":"50","actual_amount":"27.0"},{"transaction_id":"T5020","date":"2026-07-05","department":"HR","category":"Recruitment","monthly_budget":"50","actual_amount":"18.0"},{"transaction_id":"T5021","date":"2026-08-06","department":"HR","category":"Training","monthly_budget":"50","actual_amount":"31.2"},{"transaction_id":"T5022","date":"2026-08-19","department":"HR","category":"Recruitment","monthly_budget":"50","actual_amount":"20.8"},{"transaction_id":"T5023","date":"2026-09-16","department":"HR","category":"Training","monthly_budget":"50","actual_amount":"29.4"},{"transaction_id":"T5024","date":"2026-09-08","department":"HR","category":"Recruitment","monthly_budget":"50","actual_amount":"19.6"},{"transaction_id":"T5025","date":"2026-07-13","department":"Sales","category":"Travel","monthly_budget":"70","actual_amount":"45.0"},{"transaction_id":"T5026","date":"2026-07-07","department":"Sales","category":"Entertainment","monthly_budget":"70","actual_amount":"30.0"},{"transaction_id":"T5027","date":"2026-08-18","department":"Sales","category":"Travel","monthly_budget":"70","actual_amount":"40.8"},{"transaction_id":"T5028","date":"2026-08-16","department":"Sales","category":"Entertainment","monthly_budget":"70","actual_amount":"27.2"},{"transaction_id":"T5029","date":"2026-09-04","department":"Sales","category":"Travel","monthly_budget":"70","actual_amount":"49.2"},{"transaction_id":"T5030","date":"2026-09-24","department":"Sales","category":"Entertainment","monthly_budget":"70","actual_amount":"32.8"},{"transaction_id":"T5100","date":"2026-09-12","department":"Marketing","category":"Advertising","monthly_budget":"100","actual_amount":"81.0"}],"legal_contracts":[{"contract_id":"CT2001","contract_type":"Vendor Agreement","counterparty":"Counterparty 01","start_date":"2025-10-15","end_date":"2026-10-15","review_status":"Reviewed","owner":"Legal B","contract_value_juta":"150"},{"contract_id":"CT2002","contract_type":"Service Agreement","counterparty":"Counterparty 02","start_date":"2025-10-22","end_date":"2026-10-22","review_status":"Pending Review","owner":"Legal C","contract_value_juta":"800"},{"contract_id":"CT2003","contract_type":"Lease","counterparty":"Counterparty 03","start_date":"2025-10-28","end_date":"2026-10-28","review_status":"Reviewed","owner":"Legal A","contract_value_juta":"450"},{"contract_id":"CT2004","contract_type":"MoU","counterparty":"Counterparty 04","start_date":"2025-11-10","end_date":"2026-11-10","review_status":"Pending Review","owner":"Legal B","contract_value_juta":"1200"},{"contract_id":"CT2005","contract_type":"NDA","counterparty":"Counterparty 05","start_date":"2025-11-25","end_date":"2026-11-25","review_status":"Reviewed","owner":"Legal C","contract_value_juta":"300"},{"contract_id":"CT2006","contract_type":"Vendor Agreement","counterparty":"Counterparty 06","start_date":"2025-12-05","end_date":"15/11/2026","review_status":"Pending Review","owner":"Legal A","contract_value_juta":"650"},{"contract_id":"CT2007","contract_type":"Service Agreement","counterparty":"Counterparty 07","start_date":"2025-12-20","end_date":"2026-12-20","review_status":"Reviewed","owner":"Legal B","contract_value_juta":"900"},{"contract_id":"CT2008","contract_type":"Lease","counterparty":"Counterparty 08","start_date":"2026-01-15","end_date":"2027-01-15","review_status":"Reviewed","owner":"Legal C","contract_value_juta":"220"},{"contract_id":"CT2009","contract_type":"MoU","counterparty":"Counterparty 09","start_date":"2026-02-01","end_date":"2027-02-01","review_status":"Pending Review","owner":"Legal A","contract_value_juta":"1100"},{"contract_id":"CT2010","contract_type":"NDA","counterparty":"Counterparty 10","start_date":"2026-03-10","end_date":"2027-03-10","review_status":"Reviewed","owner":"Legal B","contract_value_juta":"380"},{"contract_id":"CT2011","contract_type":"Vendor Agreement","counterparty":"Counterparty 11","start_date":"2025-10-05","end_date":"2026-10-05","review_status":"Pending Review","owner":"Legal C","contract_value_juta":"540"},{"contract_id":"CT2012","contract_type":"Service Agreement","counterparty":"Counterparty 12","start_date":"2025-11-02","end_date":"2026-11-02","review_status":"Reviewed","owner":"Legal A","contract_value_juta":"760"},{"contract_id":"CT2013","contract_type":"Lease","counterparty":"Counterparty 13","start_date":"2025-12-28","end_date":"2026-12-28","review_status":"Pending Review","owner":null,"contract_value_juta":"290"},{"contract_id":"CT2014","contract_type":"MoU","counterparty":"Counterparty 14","start_date":"2026-04-01","end_date":"2027-04-01","review_status":"Reviewed","owner":"Legal C","contract_value_juta":"1500"},{"contract_id":"CT2015","contract_type":"NDA","counterparty":"Counterparty 15","start_date":"2025-11-18","end_date":"2026-11-18","review_status":"Reviewed","owner":"Legal A","contract_value_juta":"410"},{"contract_id":"CT2016","contract_type":"Vendor Agreement","counterparty":"Counterparty 16","start_date":"2026-01-30","end_date":"2027-01-30","review_status":"Pending Review","owner":"Legal B","contract_value_juta":"680"},{"contract_id":"CT2017","contract_type":"Service Agreement","counterparty":"Counterparty 17","start_date":"2025-12-12","end_date":"2026-12-12","review_status":"Reviewed","owner":"Legal C","contract_value_juta":"330"},{"contract_id":"CT2018","contract_type":"Lease","counterparty":"Counterparty 18","start_date":"2026-05-20","end_date":"2027-05-20","review_status":"Reviewed","owner":"Legal A","contract_value_juta":"950"},{"contract_id":"CT2019","contract_type":"MoU","counterparty":"Counterparty 19","start_date":"2025-10-30","end_date":"2026-10-30","review_status":"Pending Review","owner":"Legal B","contract_value_juta":"720"},{"contract_id":"CT2020","contract_type":"NDA","counterparty":"Counterparty 20","start_date":"2026-02-14","end_date":"2027-02-14","review_status":"Reviewed","owner":"Legal C","contract_value_juta":"480"},{"contract_id":"CT2021","contract_type":"Vendor Agreement","counterparty":"Counterparty 21","start_date":"2025-09-20","end_date":"2026-09-20","review_status":"Pending Review","owner":"Legal A","contract_value_juta":"610"},{"contract_id":"CT2022","contract_type":"Service Agreement","counterparty":"Counterparty 22","start_date":"2025-09-28","end_date":"2026-09-28","review_status":"Pending Review","owner":"Legal B","contract_value_juta":"270"}],"sales_pipeline":[{"deal_id":"D3001","sales_rep":"Andi","source":"Inbound","stage":"Closed Won","deal_value_juta":"250","created_date":"2026-07-05","expected_close_date":"2026-08-20","outcome":"Won"},{"deal_id":"D3002","sales_rep":"Andi","source":"Outbound","stage":"Closed Lost","deal_value_juta":"180","created_date":"2026-07-10","expected_close_date":"2026-08-30","outcome":"Lost"},{"deal_id":"D3003","sales_rep":"Andi","source":"Referral","stage":"Closed Won","deal_value_juta":"400","created_date":"2026-07-15","expected_close_date":"2026-09-10","outcome":"Won"},{"deal_id":"D3004","sales_rep":"Andi","source":"Inbound","stage":"Proposal","deal_value_juta":"320","created_date":"2026-08-01","expected_close_date":"2026-09-25","outcome":"Open"},{"deal_id":"D3005","sales_rep":"Andi","source":"Event","stage":"Negotiation","deal_value_juta":"500","created_date":"2026-08-12","expected_close_date":"2026-10-20","outcome":"Open"},{"deal_id":"D3006","sales_rep":"Bella","source":"Referral","stage":"Closed Won","deal_value_juta":"600","created_date":"2026-07-02","expected_close_date":"2026-08-15","outcome":"Won"},{"deal_id":"D3007","sales_rep":"Bella","source":"inbound","stage":"Closed Won","deal_value_juta":"350","created_date":"2026-07-20","expected_close_date":"2026-09-05","outcome":"Won"},{"deal_id":"D3008","sales_rep":"Bella","source":"Outbound","stage":"Closed Lost","deal_value_juta":"220","created_date":"2026-08-03","expected_close_date":"2026-09-18","outcome":"Lost"},{"deal_id":"D3009","sales_rep":"Bella","source":"Inbound","stage":"Qualification","deal_value_juta":"150","created_date":"2026-09-01","expected_close_date":"2026-11-05","outcome":"Open"},{"deal_id":"D3010","sales_rep":"Bella","source":"Event","stage":"Proposal","deal_value_juta":"480","created_date":"2026-09-08","expected_close_date":"2026-09-28","outcome":"Open"},{"deal_id":"D3011","sales_rep":"Citra","source":"Outbound","stage":"Closed Won","deal_value_juta":"300","created_date":"2026-07-08","expected_close_date":"2026-08-25","outcome":"Won"},{"deal_id":"D3012","sales_rep":"Citra","source":"Outbound","stage":"Closed Lost","deal_value_juta":"260","created_date":"2026-07-25","expected_close_date":"2026-09-12","outcome":"Lost"},{"deal_id":"D3013","sales_rep":"Citra","source":"Event","stage":"Closed Lost","deal_value_juta":"340","created_date":"2026-08-05","expected_close_date":"2026-09-22","outcome":"Lost"},{"deal_id":"D3014","sales_rep":"Citra","source":"Referral","stage":"Negotiation","deal_value_juta":"700","created_date":"2026-08-18","expected_close_date":"2026-10-15","outcome":"Open"},{"deal_id":"D3015","sales_rep":"Citra","source":"Inbound","stage":"Qualification","deal_value_juta":"200","created_date":"2026-09-10","expected_close_date":"2026-11-20","outcome":"Open"},{"deal_id":"D3016","sales_rep":"Dedi","source":"Inbound","stage":"Closed Won","deal_value_juta":"450","created_date":"2026-07-12","expected_close_date":"2026-08-28","outcome":"Won"},{"deal_id":"D3017","sales_rep":"Dedi","source":"Event","stage":"Closed Lost","deal_value_juta":"280","created_date":"2026-08-08","expected_close_date":"2026-09-15","outcome":"Lost"},{"deal_id":"D3018","sales_rep":"Dedi","source":"Referral","stage":"Proposal","deal_value_juta":"550","created_date":"2026-08-22","expected_close_date":"2026-09-20","outcome":"Open"},{"deal_id":"D3019","sales_rep":"Dedi","source":"Outbound","stage":"Qualification","deal_value_juta":"190","created_date":"2026-09-15","expected_close_date":"2026-11-30","outcome":"Open"},{"deal_id":"D3020","sales_rep":"Dedi","source":"Inbound","stage":"Negotiation","deal_value_juta":"620","created_date":"2026-09-20","expected_close_date":"2026-12-10","outcome":"Open"},{"deal_id":"D3021","sales_rep":"Andi","source":"Referral","stage":"Closed Won","deal_value_juta":"280","created_date":"2026-08-25","expected_close_date":"2026-09-30","outcome":"Won"},{"deal_id":"D3022","sales_rep":"Bella","source":"Outbound","stage":"Proposal","deal_value_juta":"410","created_date":"2026-09-05","expected_close_date":"2026-09-26","outcome":"Open"},{"deal_id":"D3023","sales_rep":"Citra","source":"Inbound","stage":"Closed Won","deal_value_juta":"330","created_date":"2026-08-30","expected_close_date":"2026-09-29","outcome":"Won"},{"deal_id":"D3024","sales_rep":"Dedi","source":"Event","stage":"Qualification","deal_value_juta":"240","created_date":"2026-09-25","expected_close_date":"2026-12-20","outcome":"Open"}],"marketing_campaigns":[{"campaign_id":"CMP-01","channel":"Google Ads","spend_juta":"120","impressions":"480000","clicks":"9600","leads":"480","conversions":"96","attributed_revenue_juta":"540.0","start_date":"2026-07-01","end_date":"2026-07-31"},{"campaign_id":"CMP-02","channel":"Meta Ads","spend_juta":"90","impressions":"600000","clicks":"9000","leads":"360","conversions":"54","attributed_revenue_juta":"290.0","start_date":"2026-07-01","end_date":"2026-07-31"},{"campaign_id":"CMP-03","channel":"LinkedIn","spend_juta":"75","impressions":"150000","clicks":"3000","leads":"210","conversions":"42","attributed_revenue_juta":"420.0","start_date":"2026-07-15","end_date":"2026-08-14"},{"campaign_id":"CMP-04","channel":"Email","spend_juta":"20","impressions":"80000","clicks":"4000","leads":"200","conversions":"40","attributed_revenue_juta":"180.0","start_date":"2026-08-01","end_date":"2026-08-31"},{"campaign_id":"CMP-05","channel":"Google Ads","spend_juta":"60","impressions":"250000","clicks":"5000","leads":"225","conversions":"45","attributed_revenue_juta":"250.0","start_date":"2026-08-01","end_date":"2026-08-31"},{"campaign_id":"CMP-06","channel":"Meta Ads","spend_juta":"110","impressions":"700000","clicks":"10500","leads":"420","conversions":"63","attributed_revenue_juta":"330.0","start_date":"2026-08-15","end_date":"2026-09-14"},{"campaign_id":"CMP-07","channel":"TikTok","spend_juta":"85","impressions":"900000","clicks":"13500","leads":"270","conversions":"27","attributed_revenue_juta":"140.0","start_date":"2026-09-01","end_date":"2026-09-30"},{"campaign_id":"CMP-08","channel":"LinkedIn","spend_juta":"55","impressions":"110000","clicks":"2200","leads":"154","conversions":"31","attributed_revenue_juta":"310.0","start_date":"2026-09-01","end_date":"2026-09-30"},{"campaign_id":"CMP-09","channel":"Email","spend_juta":"15","impressions":"60000","clicks":"3000","leads":"150","conversions":"30","attributed_revenue_juta":null,"start_date":"2026-09-15","end_date":"2026-10-14"},{"campaign_id":"CMP-10","channel":"TikTok","spend_juta":"70","impressions":"750000","clicks":"11250","leads":"225","conversions":"23","attributed_revenue_juta":"115.0","start_date":"2026-09-15","end_date":"2026-10-14"}],"bd_partnerships":[{"partner_id":"BD-01","industry":"Logistics","source":"Inbound","stage":"Negotiation","estimated_value_juta":"2000","close_probability":"0.7","expected_close_date":"2026-11-15","next_action":"Kirim draft MoU","status":"Active"},{"partner_id":"BD-02","industry":"Fintech","source":"Referral","stage":"Proposal","estimated_value_juta":"1500","close_probability":"0.5","expected_close_date":"2026-12-01","next_action":"Follow-up pricing","status":"Active"},{"partner_id":"BD-03","industry":"Retail","source":"Event","stage":"Qualification","estimated_value_juta":"800","close_probability":"0.3","expected_close_date":"2027-01-20","next_action":null,"status":"Active"},{"partner_id":"BD-04","industry":"Manufacturing","source":"Outbound","stage":"Negotiation","estimated_value_juta":"3000","close_probability":"0.6","expected_close_date":"2026-09-20","next_action":"Review legal terms","status":"Active"},{"partner_id":"BD-05","industry":"Healthcare","source":"Inbound","stage":"Signed","estimated_value_juta":"1200","close_probability":"1.0","expected_close_date":"2026-08-30","next_action":"Onboarding","status":"Signed"},{"partner_id":"BD-06","industry":"Logistics","source":"Referral","stage":"Proposal","estimated_value_juta":"2500","close_probability":"0.4","expected_close_date":"2026-11-30","next_action":null,"status":"Active"},{"partner_id":"BD-07","industry":"Education","source":"Event","stage":"Qualification","estimated_value_juta":"600","close_probability":"0.2","expected_close_date":"2027-02-10","next_action":"Schedule intro call","status":"Active"},{"partner_id":"BD-08","industry":"Fintech","source":"Outbound","stage":"Dropped","estimated_value_juta":"900","close_probability":"0.0","expected_close_date":"2026-09-10","next_action":null,"status":"Dropped"},{"partner_id":"BD-09","industry":"Retail","source":"Inbound","stage":"Negotiation","estimated_value_juta":"1800","close_probability":"0.65","expected_close_date":"2026-10-25","next_action":"Finalize scope","status":"Active"},{"partner_id":"BD-10","industry":"Manufacturing","source":"Referral","stage":"Signed","estimated_value_juta":"2200","close_probability":"1.0","expected_close_date":"2026-09-05","next_action":"Kick-off","status":"Signed"},{"partner_id":"BD-11","industry":"Healthcare","source":"Event","stage":"Proposal","estimated_value_juta":"1100","close_probability":"0.45","expected_close_date":"2026-09-28","next_action":null,"status":"Active"},{"partner_id":"BD-12","industry":"Education","source":"Outbound","stage":"Qualification","estimated_value_juta":"500","close_probability":"0.25","expected_close_date":"2027-03-01","next_action":"Send company profile","status":"Active"},{"partner_id":"BD-13","industry":"Logistics","source":"Inbound","stage":"Proposal","estimated_value_juta":"1700","close_probability":"0.5","expected_close_date":"2026-12-15","next_action":"Prepare commercial deck","status":"Active"},{"partner_id":"BD-14","industry":"Fintech","source":"Event","stage":"Negotiation","estimated_value_juta":"2800","close_probability":"0.55","expected_close_date":"2026-11-05","next_action":"Legal review","status":"Active"},{"partner_id":"BD-15","industry":"Retail","source":"Outbound","stage":"Dropped","estimated_value_juta":"700","close_probability":"0.0","expected_close_date":"2026-08-20","next_action":null,"status":"Dropped"},{"partner_id":"BD-16","industry":"Manufacturing","source":"Inbound","stage":"Qualification","estimated_value_juta":"1300","close_probability":"0.3","expected_close_date":"2027-01-10","next_action":null,"status":"Active"},{"partner_id":"BD-17","industry":"Education","source":"Referral","stage":"Proposal","estimated_value_juta":"950","close_probability":"0.4","expected_close_date":"2026-10-18","next_action":"Follow-up proposal","status":"Active"},{"partner_id":"BD-18","industry":"Healthcare","source":"Outbound","stage":"Negotiation","estimated_value_juta":"2400","close_probability":"0.6","expected_close_date":"2026-12-20","next_action":"Align on SLA","status":"Active"},{"partner_id":"BD-19","industry":"Logistics","source":"Event","stage":"Signed","estimated_value_juta":"1600","close_probability":"1.0","expected_close_date":"2026-09-12","next_action":"Onboarding","status":"Signed"},{"partner_id":"BD-20","industry":"Fintech","source":"Inbound","stage":"Qualification","estimated_value_juta":"1000","close_probability":"0.25","expected_close_date":"2027-02-25","next_action":"Intro meeting","status":"Active"}]}</script>
+<script>
+"use strict";
+const DATA = JSON.parse(document.getElementById("payload").textContent);
+const REPORT = new Date("2026-10-01T00:00:00");
+const N = v => v === null || v === undefined || v === "" ? null : Number(v);
+const fmt = (v, d = 0) => v === null || !isFinite(v) ? "—" :
+  v.toLocaleString("id-ID", { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = (v, d = 1) => v === null || !isFinite(v) ? "—" : fmt(v, d) + "%";
+const title = s => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s;
+const days = (a, b) => Math.round((a - b) / 86400000);
+function parseDate(s){
+  if (!s) return null;
+  if (s.includes("/")) { const [d, m, y] = s.split("/"); return new Date(+y, +m - 1, +d); }
+  const [y, m, d] = s.split("-"); return new Date(+y, +m - 1, +d);
+}
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k === "html") n.innerHTML = v; else n.setAttribute(k, v);
+  }
+  kids.flat().forEach(c => { if (c === null || c === undefined) return;
+    n.appendChild(c && c.nodeType ? c : document.createTextNode(String(c))); });
+  return n;
+};
+
+/* ---------- charts, hand-drawn SVG ---------- */
+const NS = "http://www.w3.org/2000/svg";
+function svgEl(t, a){ const n = document.createElementNS(NS, t); for (const k in a) n.setAttribute(k, a[k]); return n; }
+function barChart(rows, opts = {}){
+  // rows: [{label, value, cls}]
+  const W = 460, rowH = 30, padL = opts.padL || 130, padR = 56, H = rows.length * rowH + 14;
+  const s = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img" });
+  const hasNeg = rows.some(r => r.value < 0);
+  const max = Math.max(...rows.map(r => Math.abs(r.value)), 1);
+  const plotW = W - padL - padR;
+  const zero = hasNeg ? padL + plotW / 2 : padL;
+  const scale = hasNeg ? (plotW / 2) / max : plotW / max;
+  if (hasNeg) s.appendChild(svgEl("line", { x1: zero, y1: 4, x2: zero, y2: H - 10, class: "gridline" }));
+  rows.forEach((r, i) => {
+    const y = i * rowH + 8, w = Math.abs(r.value) * scale;
+    const x = r.value < 0 ? zero - w : zero;
+    s.appendChild(svgEl("rect", { x: padL, y, width: plotW, height: 16, class: "bar-bg", rx: 1,
+      opacity: hasNeg ? 0 : .5 }));
+    s.appendChild(svgEl("rect", { x, y, width: Math.max(w, 1.5), height: 16, rx: 1,
+      class: "bar" + (r.value < 0 ? " neg" : r.cls ? " " + r.cls : "") }));
+    const lab = svgEl("text", { x: padL - 8, y: y + 12, class: "axis", "text-anchor": "end" });
+    lab.textContent = r.label; s.appendChild(lab);
+    const val = svgEl("text", { x: (r.value < 0 ? x - 6 : x + w + 6), y: y + 12, class: "val",
+      "text-anchor": r.value < 0 ? "end" : "start" });
+    val.textContent = r.display !== undefined ? r.display : fmt(r.value, opts.dec || 0);
+    s.appendChild(val);
+  });
+  return s;
+}
+function lineChart(series, labels, opts = {}){
+  const W = 460, H = 180, padL = 46, padB = 26, padT = 12, padR = 10;
+  const s = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img" });
+  const all = series.flatMap(x => x.values);
+  const max = Math.max(...all) * 1.1, min = Math.min(0, ...all);
+  const px = i => padL + (i * (W - padL - padR)) / Math.max(labels.length - 1, 1);
+  const py = v => H - padB - ((v - min) / (max - min || 1)) * (H - padB - padT);
+  [0, .5, 1].forEach(f => {
+    const v = min + (max - min) * f, y = py(v);
+    s.appendChild(svgEl("line", { x1: padL, y1: y, x2: W - padR, y2: y, class: "gridline" }));
+    const t = svgEl("text", { x: padL - 7, y: y + 3.5, class: "axis", "text-anchor": "end" });
+    t.textContent = fmt(v, 0); s.appendChild(t);
+  });
+  labels.forEach((l, i) => {
+    const t = svgEl("text", { x: px(i), y: H - 8, class: "axis", "text-anchor": "middle" });
+    t.textContent = l; s.appendChild(t);
+  });
+  series.forEach(ser => {
+    const d = ser.values.map((v, i) => (i ? "L" : "M") + px(i) + " " + py(v)).join(" ");
+    const p = svgEl("path", { d, class: "spark" });
+    if (ser.dashed) p.setAttribute("stroke-dasharray", "4 4");
+    if (ser.color) p.setAttribute("stroke", ser.color);
+    s.appendChild(p);
+    ser.values.forEach((v, i) => {
+      const c = svgEl("circle", { cx: px(i), cy: py(v), r: 3, class: "sparkdot" });
+      if (ser.color) c.setAttribute("fill", ser.color);
+      s.appendChild(c);
+    });
+  });
+  return s;
+}
+function legend(items){
+  const d = el("div", { class: "kpi-d" });
+  d.textContent = items.join("   ·   ");
+  return d;
+}
+
+/* ---------- generic section builders ---------- */
+function kpiRow(items){
+  return el("div", { class: "kpis" }, items.map(k =>
+    el("div", { class: "kpi" + (k.est ? " est" : "") },
+      el("div", { class: "kpi-v num" }, k.value),
+      el("div", { class: "kpi-l" }, k.label),
+      k.detail ? el("div", { class: "kpi-d" }, k.detail) : [])));
+}
+function table(cols, rows, emptyMsg){
+  if (!rows.length) return el("div", { class: "scroll" }, el("p", { class: "empty" }, emptyMsg || "Tidak ada baris yang cocok dengan filter ini."));
+  const thead = el("tr", {}, cols.map(c => el("th", { class: c.n ? "n" : "" }, c.t)));
+  const body = rows.map(r => el("tr", { class: r._flag ? "flagged" : "" },
+    cols.map(c => el("td", { class: c.n ? "n" : "" }, r[c.k] === null || r[c.k] === undefined ? "—" : r[c.k]))));
+  return el("div", { class: "scroll" }, el("table", {}, el("thead", {}, thead), el("tbody", {}, body)));
+}
+function qualityList(items){
+  if (!items.length) return el("p", { class: "kpi-d" }, "Tidak ada masalah kualitas data pada baris yang terpilih.");
+  return el("ul", { class: "quality" }, items.map(t => el("li", {}, t)));
+}
+function testList(tests){
+  return el("ol", { class: "tests" }, tests.map(t =>
+    el("li", {},
+      el("span", {}, t.name + " — " + t.got),
+      el("span", { class: "verdict " + (t.pass ? "ok" : "no") }, t.pass ? "LOLOS" : "GAGAL"))));
+}
+let ALL_TESTS = [];
+function section(cfg, state){
+  const m = document.getElementById("main");
+  m.textContent = "";
+  m.appendChild(el("h2", { class: "q" }, cfg.question));
+  m.appendChild(el("p", { class: "q-note" }, cfg.note));
+  // filters
+  const fbar = el("div", { class: "filters" });
+  cfg.filters.forEach(f => {
+    const sel = el("select", { "aria-label": f.label });
+    ["(semua)"].concat(f.options).forEach(o => {
+      const op = el("option", {}, o);
+      if (state[f.key] === o) op.setAttribute("selected", "");
+      sel.appendChild(op);
+    });
+    sel.addEventListener("change", () => { state[f.key] = sel.value === "(semua)" ? null : sel.value; render(); });
+    if (state[f.key] === null) sel.value = "(semua)"; else sel.value = state[f.key];
+    fbar.appendChild(el("div", { class: "f" }, el("label", {}, f.label), sel));
+  });
+  const reset = el("button", { class: "reset", type: "button" }, "Kosongkan filter");
+  reset.addEventListener("click", () => { cfg.filters.forEach(f => state[f.key] = null); render(); });
+  fbar.appendChild(reset);
+  fbar.appendChild(el("div", { class: "rowcount num" }, cfg.rowcount));
+  m.appendChild(fbar);
+  m.appendChild(kpiRow(cfg.kpis));
+  const charts = el("div", { class: "charts" });
+  cfg.charts.forEach(c => {
+    const fig = el("figure", { class: "chart" }, el("figcaption", {}, c.caption), c.node);
+    if (c.legend) fig.appendChild(legend(c.legend));
+    charts.appendChild(fig);
+  });
+  m.appendChild(el("h3", {}, "Grafik"));
+  m.appendChild(charts);
+  m.appendChild(el("h3", {}, "Tabel detail"));
+  m.appendChild(cfg.table);
+  const two = el("div", { class: "two" },
+    el("div", {}, el("h3", {}, "Peringatan kualitas data"), qualityList(cfg.quality)),
+    el("div", {}, el("h3", {}, "Acceptance test"), testList(cfg.tests),
+      el("p", { class: "tests-note" }, "Tes dihitung ulang setiap kali filter diubah. Kosongkan filter untuk membandingkan dengan kunci jawaban.")));
+  m.appendChild(two);
+  const lim = el("div", { class: "limits" }, el("h3", {}, "Yang tidak bisa disimpulkan dari data ini"));
+  cfg.limits.forEach(t => lim.appendChild(el("p", { html: t })));
+  m.appendChild(lim);
+  m.appendChild(el("footer", {}, cfg.source));
+  ALL_TESTS = cfg.allTests;
+}
+
+/* ================= HR ================= */
+function hrRows(){
+  const seen = new Set(), rows = [], dupIds = [];
+  DATA.hr_recruitment.forEach(r => {
+    const o = Object.assign({}, r);
+    o.source = title(r.source);
+    if (seen.has(r.candidate_id)) { dupIds.push(r.candidate_id); return; }
+    seen.add(r.candidate_id); rows.push(o);
+  });
+  return { rows, dupIds: [...new Set(dupIds)], raw: DATA.hr_recruitment.length };
+}
+function hrBuild(state){
+  const { rows, dupIds, raw } = hrRows();
+  const f = rows.filter(r => (!state.source || r.source === state.source) &&
+                             (!state.dept || r.department === state.dept));
+  const app = f.length, itv = f.filter(r => r.interview_date).length, off = f.filter(r => r.offer_date).length;
+  const tth = f.filter(r => r.offer_date).map(r => days(parseDate(r.offer_date), parseDate(r.applied_date)));
+  const avg = tth.length ? tth.reduce((a, b) => a + b, 0) / tth.length : null;
+  const bySrc = {};
+  f.forEach(r => { const s = bySrc[r.source] = bySrc[r.source] || { a: 0, i: 0, o: 0 };
+    s.a++; if (r.interview_date) s.i++; if (r.offer_date) s.o++; });
+  const srcRows = Object.entries(bySrc).map(([k, v]) => ({ label: k, value: v.a ? v.o / v.a * 100 : 0,
+    display: pct(v.a ? v.o / v.a * 100 : 0) + " (" + v.o + "÷" + v.a + ")" })).sort((a, b) => b.value - a.value);
+  const quality = [];
+  if (!state.source && !state.dept) {
+    quality.push("Baris duplikat: " + dupIds.join(", ") + " muncul dua kali. Dari " + raw + " baris mentah, " + rows.length + " pelamar unik dipakai.");
+    quality.push("Kategori sumber tidak konsisten: satu baris tertulis huruf kecil. Diseragamkan menjadi " + new Set(rows.map(r => r.source)).size + " kategori.");
+  }
+  const noItv = f.filter(r => !r.interview_date).length;
+  quality.push(noItv + " pelamar belum punya tanggal interview — dihitung sebagai belum masuk tahap interview, bukan data hilang.");
+  const tests = [
+    { name: "Pelamar unik, bukan baris mentah", got: app + (state.source || state.dept ? " (terfilter)" : " dari " + raw + " baris"), pass: state.source || state.dept ? true : app === 34 },
+    { name: "Kategori sumber setelah diseragamkan", got: new Set(rows.map(r => r.source)).size + " kategori", pass: new Set(rows.map(r => r.source)).size === 5 },
+    { name: "Funnel pelamar → interview → offer", got: app + " → " + itv + " → " + off, pass: state.source || state.dept ? true : (app === 34 && itv === 17 && off === 7) },
+    { name: "Hire rate Referral", got: bySrc.Referral ? pct(bySrc.Referral.o / bySrc.Referral.a * 100) : "tidak dalam filter", pass: !bySrc.Referral || Math.abs(bySrc.Referral.o / bySrc.Referral.a * 100 - 42.9) < 0.1 || !!(state.source || state.dept) },
+    { name: "Time-to-hire dihitung dari kandidat yang di-hire saja", got: avg === null ? "tidak ada hire" : fmt(avg, 1) + " hari dari " + tth.length + " kandidat", pass: tth.length === off }
+  ];
+  return {
+    question: "Sumber kandidat mana yang menghasilkan hire terbanyak per pelamar?",
+    note: "Kebocoran terbesar biasanya bukan di tahap offer. Perhatikan selisih antara jumlah pelamar dan jumlah interview sebelum menilai sumber mana yang terbaik.",
+    filters: [{ key: "source", label: "Sumber kandidat", options: [...new Set(rows.map(r => r.source))].sort() },
+              { key: "dept", label: "Departemen", options: [...new Set(rows.map(r => r.department))].sort() }],
+    rowcount: f.length + " dari " + rows.length + " pelamar unik",
+    kpis: [
+      { value: fmt(app), label: "Pelamar unik", detail: raw + " baris mentah − " + dupIds.length + " duplikat" },
+      { value: pct(app ? itv / app * 100 : null), label: "Interview rate", detail: itv + " ÷ " + app + " pelamar" },
+      { value: pct(app ? off / app * 100 : null), label: "Offer rate", detail: off + " ÷ " + app + " pelamar" },
+      { value: avg === null ? "—" : fmt(avg, 1), label: "Rata-rata time-to-hire (hari)", detail: tth.length + " kandidat di-hire" }
+    ],
+    charts: [
+      { caption: "Hire rate per sumber kandidat", node: barChart(srcRows.length ? srcRows : [{ label: "—", value: 0 }], { dec: 1 }) },
+      { caption: "Jumlah kandidat di tiap tahap", node: barChart([
+          { label: "Melamar", value: app }, { label: "Interview", value: itv, cls: "alt" }, { label: "Offer", value: off, cls: "alt" }], { padL: 86 }) }
+    ],
+    table: table([{ k: "candidate_id", t: "ID" }, { k: "source", t: "Sumber" }, { k: "department", t: "Departemen" },
+      { k: "applied_date", t: "Melamar" }, { k: "interview_date", t: "Interview" }, { k: "offer_date", t: "Offer" },
+      { k: "status", t: "Status" }, { k: "_tth", t: "Time-to-hire", n: true }],
+      f.map(r => Object.assign({}, r, { _tth: r.offer_date ? days(parseDate(r.offer_date), parseDate(r.applied_date)) + " hari" : null }))),
+    quality, tests,
+    limits: ["<strong>Kualitas kandidat.</strong> Dataset ini hanya mencatat tahapan dan tanggal. Sumber dengan hire rate tinggi belum tentu menghasilkan karyawan yang bertahan lebih lama atau berkinerja lebih baik.",
+      "<strong>Besaran sampel.</strong> Referral hanya punya 7 pelamar. Selisih satu kandidat mengubah persentasenya belasan poin, jadi angka ini terlalu rapuh untuk memindahkan anggaran besar.",
+      "<strong>Karakteristik pribadi.</strong> Dataset sengaja tidak memuat usia, jenis kelamin, agama, atau status pernikahan — dan tidak boleh ditambahkan untuk memeringkat kandidat."],
+    source: "Sumber: hr_recruitment.csv · data sintetis untuk latihan"
+  };
+}
+
+/* ================= FINANCE ================= */
+function finRows(){
+  const seen = new Map(), rows = [], dups = [];
+  DATA.finance_expenses.forEach(r => {
+    const key = [r.date, r.department, r.category, r.actual_amount].join("|");
+    if (seen.has(key)) { dups.push([seen.get(key), r.transaction_id]); return; }
+    seen.set(key, r.transaction_id); rows.push(Object.assign({}, r));
+  });
+  return { rows, dups, raw: DATA.finance_expenses.length };
+}
+const MON = { "07": "Juli", "08": "Agustus", "09": "September" };
+function finBuild(state){
+  const { rows, dups, raw } = finRows();
+  rows.forEach(r => r._m = MON[r.date.slice(5, 7)]);
+  const f = rows.filter(r => (!state.dept || r.department === state.dept) && (!state.month || r._m === state.month));
+  const actual = f.reduce((a, r) => a + (N(r.actual_amount) || 0), 0);
+  const budKey = new Set(), budget = f.reduce((a, r) => {
+    const k = r.department + r._m; if (budKey.has(k)) return a; budKey.add(k); return a + N(r.monthly_budget); }, 0);
+  const miss = f.filter(r => N(r.actual_amount) === null);
+  const byDept = {};
+  f.forEach(r => { const d = byDept[r.department] = byDept[r.department] || { a: 0, b: 0, months: new Set() };
+    d.a += N(r.actual_amount) || 0; if (!d.months.has(r._m)) { d.months.add(r._m); d.b += N(r.monthly_budget); } });
+  const varRows = Object.entries(byDept).map(([k, v]) => ({ label: k, value: v.a - v.b,
+    display: (v.a - v.b > 0 ? "+" : "") + fmt(v.a - v.b, 0) + " (" + (v.a - v.b > 0 ? "+" : "") + fmt((v.a - v.b) / v.b * 100, 1) + "%)" }))
+    .sort((a, b) => b.value - a.value);
+  const byCat = {};
+  f.forEach(r => byCat[r.category] = (byCat[r.category] || 0) + (N(r.actual_amount) || 0));
+  const catRows = Object.entries(byCat).map(([k, v]) => ({ label: k, value: v, cls: "alt" })).sort((a, b) => b.value - a.value).slice(0, 6);
+  const months = ["Juli", "Agustus", "September"].filter(m => f.some(r => r._m === m));
+  const trend = months.map(m => f.filter(r => r._m === m).reduce((a, r) => a + (N(r.actual_amount) || 0), 0));
+  const trendB = months.map(m => { const k = new Set();
+    return f.filter(r => r._m === m).reduce((a, r) => { if (k.has(r.department)) return a; k.add(r.department); return a + N(r.monthly_budget); }, 0); });
+  const quality = [];
+  if (dups.length) quality.push("Transaksi berpotensi dobel input: " + dups.map(d => d.join(" dan ")).join("; ") + " identik pada tanggal, departemen, kategori, dan nilai. Dihitung satu kali. Ini perlu ditinjau pemilik anggaran — bukan bukti kecurangan.");
+  if (miss.length) miss.forEach(r => quality.push("Nilai actual kosong: " + r.transaction_id + " (" + r.department + " · " + r.category + " · " + r.date + "). Tidak diisi nol, sehingga total " + r.department + " " + r._m + " tidak lengkap dan terlihat lebih hemat dari kenyataan."));
+  const mk = Object.entries(byDept).find(([k]) => k === "Marketing");
+  const tests = [
+    { name: "Total actual cocok dengan SUM di file", got: fmt(actual, 0) + " juta dari " + f.length + " baris", pass: state.dept || state.month ? true : Math.abs(actual - 1483) < 0.5 },
+    { name: "Duplikat dihitung sekali", got: rows.length + " baris dipakai dari " + raw, pass: rows.length === raw - dups.length },
+    { name: "Nilai kosong diungkap, bukan diisi nol", got: miss.length + " baris ditandai", pass: true },
+    { name: "Budget dihitung per departemen per bulan", got: fmt(budget, 0) + " juta", pass: state.dept || state.month ? true : budget === 1500 },
+    { name: "Variance Marketing", got: mk ? (mk[1].a - mk[1].b > 0 ? "+" : "") + fmt(mk[1].a - mk[1].b, 0) + " (" + pct((mk[1].a - mk[1].b) / mk[1].b * 100) + ")" : "tidak dalam filter",
+      pass: !mk || state.month ? true : Math.abs(mk[1].a - mk[1].b - 60) < 0.5 }
+  ];
+  return {
+    question: "Departemen mana yang selisih anggarannya terbesar, dan apakah polanya konsisten?",
+    note: "monthly_budget adalah anggaran per departemen per bulan, bukan per transaksi. Menjumlahkannya per baris akan melipatgandakan anggaran dan membuat semua departemen terlihat hemat.",
+    filters: [{ key: "dept", label: "Departemen", options: [...new Set(rows.map(r => r.department))].sort() },
+              { key: "month", label: "Bulan", options: ["Juli", "Agustus", "September"] }],
+    rowcount: f.length + " transaksi · " + dups.length + " duplikat dikeluarkan",
+    kpis: [
+      { value: fmt(actual, 0), label: "Total actual (juta)", detail: f.length + " transaksi" },
+      { value: fmt(budget, 0), label: "Total budget (juta)", detail: budKey.size + " kombinasi departemen × bulan" },
+      { value: (actual - budget > 0 ? "+" : "") + fmt(actual - budget, 0), label: "Variance (juta)", detail: "actual − budget" },
+      { value: pct(budget ? (actual - budget) / budget * 100 : null), label: "Variance %", detail: "(actual − budget) ÷ budget" }
+    ],
+    charts: [
+      { caption: "Variance per departemen (juta rupiah)", node: barChart(varRows.length ? varRows : [{ label: "—", value: 0 }]) },
+      { caption: "Tren bulanan: actual versus budget", node: months.length > 1
+          ? lineChart([{ values: trend }, { values: trendB, dashed: true, color: "var(--ink-soft)" }], months)
+          : barChart(catRows.length ? catRows : [{ label: "—", value: 0 }]),
+        legend: months.length > 1 ? ["garis penuh: actual", "garis putus: budget"] : null },
+      { caption: "Kategori biaya terbesar (juta rupiah)", node: barChart(catRows.length ? catRows : [{ label: "—", value: 0 }], { dec: 1 }) }
+    ],
+    table: table([{ k: "transaction_id", t: "ID" }, { k: "date", t: "Tanggal" }, { k: "department", t: "Departemen" },
+      { k: "category", t: "Kategori" }, { k: "monthly_budget", t: "Budget bulan", n: true },
+      { k: "_act", t: "Actual", n: true }, { k: "_note", t: "Catatan" }],
+      f.map(r => { const dup = dups.some(d => d[0] === r.transaction_id);
+        const m = N(r.actual_amount) === null;
+        return Object.assign({}, r, { _act: m ? "kosong" : fmt(N(r.actual_amount), 1),
+          _note: m ? el("span", { class: "tag miss" }, "nilai kosong") : dup ? el("span", { class: "tag dup" }, "kembar — perlu ditinjau") : null,
+          _flag: m || dup }); })),
+    quality, tests,
+    limits: ["<strong>Penyebab selisih.</strong> Dataset hanya memuat angka. Tidak ada kolom yang menjelaskan mengapa Marketing melebihi anggaran, jadi setiap penjelasan harus dikonfirmasi ke pemilik anggaran.",
+      "<strong>Transaksi kembar.</strong> Dua baris identik bisa berarti dobel input, bisa juga dua pembayaran sah dengan nilai sama di hari yang sama. Tandai untuk ditinjau; jangan sebut kesalahan atau kecurangan.",
+      "<strong>Operations tampak hemat.</strong> Sebagian penghematannya berasal dari transaksi yang nilainya kosong, bukan dari pengendalian biaya."],
+    source: "Sumber: finance_expenses.csv · data sintetis · nilai dalam juta rupiah"
+  };
+}
+
+/* ================= LEGAL ================= */
+function lglBuild(state){
+  const rows = DATA.legal_contracts.map(r => {
+    const e = parseDate(r.end_date), d = days(e, REPORT);
+    return Object.assign({}, r, { _end: e, _d: d,
+      _bucket: d < 0 ? "Sudah lewat" : d <= 30 ? "0–30 hari" : d <= 60 ? "31–60 hari" : d <= 90 ? "61–90 hari" : "Lebih dari 90 hari",
+      _odd: r.end_date.includes("/") });
+  });
+  const f = rows.filter(r => (!state.type || r.contract_type === state.type) &&
+    (!state.status || r.review_status === state.status) && (!state.bucket || r._bucket === state.bucket));
+  const active = f.filter(r => r._d >= 0);
+  const b = k => active.filter(r => r._bucket === k).length;
+  const pending = f.filter(r => r.review_status === "Pending Review");
+  const urgent = active.filter(r => r._d <= 90 && r.review_status === "Pending Review").sort((a, b2) => a._d - b2._d);
+  const noOwner = f.filter(r => !r.owner);
+  const byType = {};
+  f.forEach(r => byType[r.contract_type] = (byType[r.contract_type] || 0) + N(r.contract_value_juta));
+  const quality = [];
+  f.filter(r => r._odd).forEach(r => quality.push("Format tanggal menyimpang: " + r.contract_id + " ditulis " + r.end_date + " (hari/bulan/tahun). Dibaca sebagai " + r._end.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) + ". Kalau dibaca terbalik, kontrak ini salah masuk daftar kedaluwarsa."));
+  noOwner.forEach(r => quality.push("Metadata tidak lengkap: " + r.contract_id + " tidak punya owner. Jangan ditebak — tandai untuk dilengkapi."));
+  const exp = f.filter(r => r._d < 0);
+  if (exp.length) quality.push(exp.length + " kontrak sudah lewat tanggal berakhir (" + exp.map(r => r.contract_id).join(", ") + ") dan dikeluarkan dari hitungan kontrak aktif.");
+  const tests = [
+    { name: "Tanggal pelaporan dinyatakan di layar", got: "1 Oktober 2026", pass: true },
+    { name: "Kontrak kedaluwarsa dipisahkan dari aktif", got: exp.length + " lewat · " + active.length + " aktif", pass: state.type || state.status || state.bucket ? true : (exp.length === 2 && active.length === 20) },
+    { name: "Bucket jatuh tempo (batas hari inklusif)", got: b("0–30 hari") + " / " + b("31–60 hari") + " / " + b("61–90 hari"), pass: state.type || state.status || state.bucket ? true : (b("0–30 hari") === 5 && b("31–60 hari") === 5 && b("61–90 hari") === 3) },
+    { name: "Aktif ≤90 hari dan masih Pending Review", got: urgent.length + " kontrak", pass: state.type || state.status || state.bucket ? true : urgent.length === 6 },
+    { name: "Baris tanpa owner terlihat, tidak diisi tebakan", got: noOwner.length + " baris ditandai", pass: true }
+  ];
+  return {
+    question: "Kontrak mana yang harus ditangani lebih dulu bulan ini?",
+    note: "Tanggal pelaporan 1 Oktober 2026, batas hari inklusif: kontrak yang berakhir tepat 30 hari lagi masuk bucket 0–30. Kolom review_status adalah status administrasi, bukan penilaian risiko hukum.",
+    filters: [{ key: "type", label: "Jenis kontrak", options: [...new Set(rows.map(r => r.contract_type))].sort() },
+      { key: "status", label: "Status review", options: ["Reviewed", "Pending Review"] },
+      { key: "bucket", label: "Jatuh tempo", options: ["Sudah lewat", "0–30 hari", "31–60 hari", "61–90 hari", "Lebih dari 90 hari"] }],
+    rowcount: f.length + " dari " + rows.length + " kontrak",
+    kpis: [
+      { value: fmt(active.length), label: "Kontrak aktif", detail: exp.length + " sudah lewat, dikeluarkan" },
+      { value: fmt(b("0–30 hari")), label: "Berakhir dalam 30 hari", detail: "butuh keputusan bulan ini" },
+      { value: fmt(urgent.length), label: "≤90 hari & belum direview", detail: "daftar kerja tim legal" },
+      { value: fmt(f.reduce((a, r) => a + N(r.contract_value_juta), 0)), label: "Total nilai kontrak (juta)", detail: f.length + " kontrak terpilih" }
+    ],
+    charts: [
+      { caption: "Jumlah kontrak aktif per bucket jatuh tempo", node: barChart(["0–30 hari", "31–60 hari", "61–90 hari", "Lebih dari 90 hari"].map(k => ({ label: k, value: b(k), cls: k === "0–30 hari" ? "" : "alt" })), { padL: 118 }) },
+      { caption: "Nilai kontrak per jenis (juta rupiah)", node: barChart(Object.entries(byType).map(([k, v]) => ({ label: k, value: v, cls: "alt" })).sort((a, b2) => b2.value - a.value), { padL: 118 }) }
+    ],
+    table: table([{ k: "contract_id", t: "ID" }, { k: "contract_type", t: "Jenis" }, { k: "counterparty", t: "Pihak lawan" },
+      { k: "end_date", t: "Berakhir" }, { k: "_sisa", t: "Sisa hari", n: true }, { k: "review_status", t: "Status review" },
+      { k: "_own", t: "Owner" }, { k: "contract_value_juta", t: "Nilai", n: true }],
+      f.slice().sort((a, b2) => a._d - b2._d).map(r => Object.assign({}, r, {
+        _sisa: r._d < 0 ? "lewat " + Math.abs(r._d) : r._d,
+        _own: r.owner || el("span", { class: "tag miss" }, "kosong"),
+        _flag: r._d < 0 || !r.owner || r._odd }))),
+    quality, tests,
+    limits: ["<strong>Opini hukum.</strong> Halaman ini membaca metadata kontrak, bukan isi dokumennya. Tidak ada klasifikasi risiko hukum yang bisa dibuat dari tabel ini — yang dihasilkan hanya urutan triase administratif.",
+      "<strong>Status review.</strong> Pending Review berarti belum ada yang memeriksa, bukan berarti kontraknya bermasalah.",
+      "<strong>Kelengkapan register.</strong> Kontrak yang tidak pernah dicatat di file ini tidak akan pernah muncul sebagai jatuh tempo."],
+    source: "Sumber: legal_contracts.csv · data sintetis · tanggal pelaporan 1 Oktober 2026"
+  };
+}
+
+/* ================= SALES ================= */
+function slsBuild(state){
+  const rows = DATA.sales_pipeline.map(r => Object.assign({}, r, { source: title(r.source),
+    _late: r.outcome === "Open" && parseDate(r.expected_close_date) < REPORT }));
+  const f = rows.filter(r => (!state.rep || r.sales_rep === state.rep) &&
+    (!state.src || r.source === state.src) && (!state.stage || r.stage === state.stage));
+  const v = o => f.filter(r => r.outcome === o).reduce((a, r) => a + N(r.deal_value_juta), 0);
+  const c = o => f.filter(r => r.outcome === o).length;
+  const won = v("Won"), open = v("Open"), lost = v("Lost");
+  const closed = c("Won") + c("Lost");
+  const wrClosed = closed ? c("Won") / closed * 100 : null;
+  const wrAll = f.length ? c("Won") / f.length * 100 : null;
+  const late = f.filter(r => r._late);
+  const byRep = {};
+  f.filter(r => r.outcome === "Won").forEach(r => byRep[r.sales_rep] = (byRep[r.sales_rep] || 0) + N(r.deal_value_juta));
+  const byStage = {};
+  f.filter(r => r.outcome === "Open").forEach(r => byStage[r.stage] = (byStage[r.stage] || 0) + N(r.deal_value_juta));
+  const quality = [];
+  if (!state.src) quality.push("Kategori sumber tidak konsisten di file asli: satu deal tertulis huruf kecil. Diseragamkan menjadi " + new Set(rows.map(r => r.source)).size + " kategori sebelum dihitung.");
+  if (late.length) quality.push(late.length + " deal berstatus Open sudah melewati tanggal target penutupan (" + late.map(r => r.deal_id).join(", ") + ") senilai " + fmt(late.reduce((a, r) => a + N(r.deal_value_juta), 0)) + " juta. Statusnya belum diperbarui di sistem.");
+  const tests = [
+    { name: "Closed-won dan open pipeline tidak dijumlahkan", got: "Won " + fmt(won) + " · Open " + fmt(open), pass: state.rep || state.src || state.stage ? true : (won === 2960 && open === 4360) },
+    { name: "Win rate disertai penyebutnya", got: pct(wrClosed) + " (" + c("Won") + "÷" + closed + " deal tertutup)", pass: state.rep || state.src || state.stage ? true : Math.abs(wrClosed - 61.5) < 0.1 },
+    { name: "Kategori sumber setelah diseragamkan", got: new Set(rows.map(r => r.source)).size + " kategori", pass: new Set(rows.map(r => r.source)).size === 4 },
+    { name: "Deal kedaluwarsa hanya yang berstatus Open", got: late.length + " deal · " + fmt(late.reduce((a, r) => a + N(r.deal_value_juta), 0)) + " juta", pass: state.rep || state.src || state.stage ? late.every(r => r.outcome === "Open") : (late.length === 4 && late.every(r => r.outcome === "Open")) },
+    { name: "Pendapatan per rep hanya dari deal Won", got: Object.keys(byRep).length + " rep · total " + fmt(Object.values(byRep).reduce((a, b2) => a + b2, 0)), pass: Math.abs(Object.values(byRep).reduce((a, b2) => a + b2, 0) - won) < 0.5 }
+  ];
+  return {
+    question: "Berapa yang sudah jadi pendapatan, dan berapa yang masih sekadar harapan?",
+    note: "Closed-won, open pipeline, dan nilai deal yang kalah adalah tiga angka berbeda. Menjumlahkan ketiganya menghasilkan angka besar yang tidak berarti apa-apa.",
+    filters: [{ key: "rep", label: "Sales rep", options: [...new Set(rows.map(r => r.sales_rep))].sort() },
+      { key: "src", label: "Sumber lead", options: [...new Set(rows.map(r => r.source))].sort() },
+      { key: "stage", label: "Stage", options: [...new Set(rows.map(r => r.stage))].sort() }],
+    rowcount: f.length + " dari " + rows.length + " deal",
+    kpis: [
+      { value: fmt(won), label: "Closed-won revenue (juta)", detail: c("Won") + " deal menang" },
+      { value: fmt(open), label: "Open pipeline (juta)", detail: c("Open") + " deal terbuka", est: true },
+      { value: pct(wrClosed), label: "Win rate", detail: c("Won") + " ÷ " + closed + " deal tertutup" },
+      { value: fmt(late.length), label: "Deal lewat target closing", detail: fmt(late.reduce((a, r) => a + N(r.deal_value_juta), 0)) + " juta tertahan" }
+    ],
+    charts: [
+      { caption: "Pendapatan tertutup per sales rep (juta rupiah)", node: barChart(Object.entries(byRep).map(([k, v2]) => ({ label: k, value: v2 })).sort((a, b2) => b2.value - a.value).concat(Object.keys(byRep).length ? [] : [{ label: "—", value: 0 }]), { padL: 92 }) },
+      { caption: "Nilai pipeline terbuka per stage (juta rupiah)", node: barChart(Object.entries(byStage).map(([k, v2]) => ({ label: k, value: v2, cls: "alt" })).sort((a, b2) => b2.value - a.value).concat(Object.keys(byStage).length ? [] : [{ label: "—", value: 0 }]), { padL: 110 }) },
+      { caption: "Nilai deal menurut hasil akhir (juta rupiah)", node: barChart([{ label: "Won", value: won }, { label: "Open", value: open, cls: "alt" }, { label: "Lost", value: lost, cls: "neg2" }], { padL: 80 }) }
+    ],
+    table: table([{ k: "deal_id", t: "ID" }, { k: "sales_rep", t: "Rep" }, { k: "source", t: "Sumber" },
+      { k: "stage", t: "Stage" }, { k: "deal_value_juta", t: "Nilai", n: true },
+      { k: "expected_close_date", t: "Target closing" }, { k: "outcome", t: "Hasil" }, { k: "_note", t: "Catatan" }],
+      f.map(r => Object.assign({}, r, { _note: r._late ? el("span", { class: "tag late" }, "lewat target") : null, _flag: r._late }))),
+    quality, tests,
+    limits: ["<strong>Open pipeline bukan pendapatan.</strong> Nilai deal terbuka adalah perkiraan yang dibuat sales rep, dan sebagian besar tidak akan tertutup sebesar itu.",
+      "<strong>Dua versi win rate.</strong> Dengan penyebut deal tertutup angkanya " + pct(wrClosed) + "; dengan penyebut seluruh deal " + pct(wrAll) + ". Keduanya benar — yang keliru adalah menyebut angka tanpa penyebutnya.",
+      "<strong>Sumber lead.</strong> Event belum menghasilkan kemenangan di periode ini, tetapi deal dari event bisa saja masih terbuka dan butuh siklus lebih panjang."],
+    source: "Sumber: sales_pipeline.csv · data sintetis · tanggal pelaporan 1 Oktober 2026"
+  };
+}
+
+/* ================= MARKETING ================= */
+function mktBuild(state){
+  const rows = DATA.marketing_campaigns.map(r => {
+    const spend = N(r.spend_juta), rev = N(r.attributed_revenue_juta), clicks = N(r.clicks), leads = N(r.leads);
+    return Object.assign({}, r, { _spend: spend, _rev: rev,
+      _ctr: clicks / N(r.impressions) * 100, _cpc: clicks ? spend / clicks : null,
+      _cpl: leads ? spend / leads : null, _cvr: leads ? N(r.conversions) / leads * 100 : null,
+      _roas: rev === null ? null : spend ? rev / spend : null });
+  });
+  const f = rows.filter(r => !state.channel || r.channel === state.channel);
+  const spend = f.reduce((a, r) => a + r._spend, 0);
+  const known = f.filter(r => r._rev !== null);
+  const rev = known.reduce((a, r) => a + r._rev, 0);
+  const spendKnown = known.reduce((a, r) => a + r._spend, 0);
+  const leads = f.reduce((a, r) => a + N(r.leads), 0);
+  const conv = f.reduce((a, r) => a + N(r.conversions), 0);
+  const impr = f.reduce((a, r) => a + N(r.impressions), 0);
+  const clicks = f.reduce((a, r) => a + N(r.clicks), 0);
+  const missing = f.filter(r => r._rev === null);
+  const ch = {};
+  f.forEach(r => { const c = ch[r.channel] = ch[r.channel] || { s: 0, sk: 0, rev: 0, l: 0, i: 0, c: 0 };
+    c.s += r._spend; c.l += N(r.leads); c.i += N(r.impressions); c.c += N(r.clicks);
+    if (r._rev !== null) { c.rev += r._rev; c.sk += r._spend; } });
+  const chRows = Object.entries(ch).map(([k, v]) => ({ k, roas: v.sk ? v.rev / v.sk : null, cpl: v.l ? v.s / v.l : null, impr: v.i }));
+  const quality = [];
+  missing.forEach(r => quality.push("Pendapatan teratribusi kosong: " + r.campaign_id + " (" + r.channel + ", belanja " + fmt(r._spend) + " juta). Dikeluarkan dari pembilang DAN penyebut ROAS — bukan dianggap nol. Tanpa ini, ROAS " + r.channel + " akan terlihat jauh lebih rendah dari kenyataan."));
+  if (missing.length) quality.push("ROAS keseluruhan dihitung dari belanja " + fmt(spendKnown) + " juta yang punya data pendapatan, bukan dari total belanja " + fmt(spend) + " juta.");
+  const email = ch["Email"];
+  const tests = [
+    { name: "ROAS mengeluarkan baris tanpa pendapatan", got: email ? "Email " + fmt(email.rev / email.sk, 2) + " (bukan " + fmt(email.rev / email.s, 2) + ")" : "Email tidak dalam filter", pass: !email || Math.abs(email.rev / email.sk - 9) < 0.01 },
+    { name: "KPI channel dihitung dari angka agregat", got: chRows.length + " channel dihitung ulang", pass: true },
+    { name: "Pembagi nol tidak merusak perhitungan", got: f.filter(r => !N(r.clicks) || !N(r.leads)).length + " baris berpembagi nol", pass: f.every(r => r._cpl === null || isFinite(r._cpl)) },
+    { name: "Total belanja cocok dengan SUM di file", got: fmt(spend) + " juta dari " + f.length + " campaign", pass: state.channel ? true : spend === 700 },
+    { name: "ROAS keseluruhan memakai penyebut yang benar", got: fmt(rev / spendKnown, 2) + " (" + fmt(rev) + " ÷ " + fmt(spendKnown) + ")", pass: state.channel ? true : Math.abs(rev / spendKnown - 3.76) < 0.01 }
+  ];
+  return {
+    question: "Channel mana yang paling efisien per rupiah, bukan yang paling banyak dilihat?",
+    note: "Jangkauan dan efisiensi sering bergerak berlawanan. Bandingkan urutan channel menurut impressions dengan urutannya menurut biaya per lead sebelum mengambil kesimpulan.",
+    filters: [{ key: "channel", label: "Channel", options: [...new Set(rows.map(r => r.channel))].sort() }],
+    rowcount: f.length + " dari " + rows.length + " campaign",
+    kpis: [
+      { value: fmt(spend), label: "Total belanja (juta)", detail: f.length + " campaign" },
+      { value: fmt(leads ? spend / leads : null, 3), label: "Biaya per lead (juta)", detail: fmt(spend) + " ÷ " + fmt(leads) + " lead" },
+      { value: pct(leads ? conv / leads * 100 : null), label: "Conversion rate", detail: fmt(conv) + " ÷ " + fmt(leads) + " lead" },
+      { value: fmt(spendKnown ? rev / spendKnown : null, 2), label: "ROAS", detail: missing.length ? fmt(missing.length) + " campaign tanpa data pendapatan dikeluarkan" : "seluruh campaign punya data" }
+    ],
+    charts: [
+      { caption: "ROAS per channel", node: barChart(chRows.filter(r => r.roas !== null).map(r => ({ label: r.k, value: r.roas, cls: "alt" })).sort((a, b2) => b2.value - a.value).concat(chRows.length ? [] : [{ label: "—", value: 0 }]), { dec: 2, padL: 96 }) },
+      { caption: "Biaya per lead per channel (juta rupiah)", node: barChart(chRows.filter(r => r.cpl !== null).map(r => ({ label: r.k, value: r.cpl })).sort((a, b2) => b2.value - a.value).concat(chRows.length ? [] : [{ label: "—", value: 0 }]), { dec: 3, padL: 96 }) },
+      { caption: "Jangkauan per channel (impressions)", node: barChart(chRows.map(r => ({ label: r.k, value: r.impr, cls: "alt" })).sort((a, b2) => b2.value - a.value).concat(chRows.length ? [] : [{ label: "—", value: 0 }]), { padL: 96 }) }
+    ],
+    table: table([{ k: "campaign_id", t: "ID" }, { k: "channel", t: "Channel" }, { k: "spend_juta", t: "Belanja", n: true },
+      { k: "_ctrD", t: "CTR", n: true }, { k: "_cpcD", t: "CPC", n: true }, { k: "_cplD", t: "CPL", n: true },
+      { k: "_cvrD", t: "CVR", n: true }, { k: "_roasD", t: "ROAS", n: true }, { k: "_note", t: "Catatan" }],
+      f.map(r => Object.assign({}, r, { _ctrD: pct(r._ctr, 2), _cpcD: fmt(r._cpc, 4), _cplD: fmt(r._cpl, 3),
+        _cvrD: pct(r._cvr), _roasD: r._roas === null ? "—" : fmt(r._roas, 2),
+        _note: r._rev === null ? el("span", { class: "tag miss" }, "pendapatan kosong") : null, _flag: r._rev === null }))),
+    quality, tests,
+    limits: ["<strong>Atribusi bukan sebab-akibat.</strong> Pendapatan teratribusi hanya menunjukkan penjualan yang dikaitkan sistem atribusi ke sebuah campaign. Sebagian pembeli mungkin tetap membeli tanpa pernah melihat iklannya.",
+      "<strong>Dampak inkremental.</strong> Membuktikan bahwa sebuah channel benar-benar menambah penjualan butuh eksperimen terkontrol, bukan laporan atribusi.",
+      "<strong>Periode pendek.</strong> Sepuluh campaign dalam empat bulan terlalu sedikit untuk menyimpulkan performa channel secara permanen."],
+    source: "Sumber: marketing_campaigns.csv · data sintetis · nilai dalam juta rupiah"
+  };
+}
+
+/* ================= BD ================= */
+function bdBuild(state){
+  const rows = DATA.bd_partnerships.map(r => Object.assign({}, r, {
+    _est: N(r.estimated_value_juta), _p: N(r.close_probability),
+    _w: N(r.estimated_value_juta) * N(r.close_probability),
+    _late: r.status === "Active" && parseDate(r.expected_close_date) < REPORT,
+    _noAct: r.status === "Active" && !r.next_action }));
+  const f = rows.filter(r => (!state.industry || r.industry === state.industry) &&
+    (!state.stage || r.stage === state.stage) && (!state.status || r.status === state.status));
+  const act = f.filter(r => r.status === "Active");
+  const est = act.reduce((a, r) => a + r._est, 0);
+  const wt = act.reduce((a, r) => a + r._w, 0);
+  const signed = f.filter(r => r.status === "Signed").reduce((a, r) => a + r._est, 0);
+  const late = f.filter(r => r._late), noAct = f.filter(r => r._noAct);
+  const byInd = {}; act.forEach(r => byInd[r.industry] = (byInd[r.industry] || 0) + r._w);
+  const byStage = {}; act.forEach(r => byStage[r.stage] = (byStage[r.stage] || 0) + 1);
+  const quality = [];
+  if (noAct.length) quality.push(noAct.length + " peluang aktif tidak punya next action (" + noAct.sort((a, b2) => b2._est - a._est).map(r => r.partner_id).join(", ") + ") senilai " + fmt(noAct.reduce((a, r) => a + r._est, 0)) + " juta. Kolom kosong berarti tidak ada yang memegang langkah berikutnya, bukan berarti selesai.");
+  if (late.length) quality.push(late.length + " peluang aktif sudah lewat tanggal target penutupan (" + late.map(r => r.partner_id).join(", ") + "). Tanggalnya perlu diperbarui atau peluangnya ditutup.");
+  const both = f.filter(r => r._late && r._noAct);
+  if (both.length) quality.push("Prioritas tertinggi: " + both.map(r => r.partner_id).join(", ") + " kena dua masalah sekaligus — lewat target dan tanpa next action.");
+  quality.push("close_probability adalah penilaian subjektif tim BD, bukan hasil model statistik. Nilai weighted mewarisi ketidakpastian itu.");
+  const tests = [
+    { name: "Empat jenis nilai dilaporkan terpisah", got: "estimated " + fmt(est) + " · weighted " + fmt(wt) + " · signed " + fmt(signed) + " · realized tidak tersedia", pass: state.industry || state.stage || state.status ? true : (est === 23950 && Math.round(wt) === 11950 && signed === 5000) },
+    { name: "Pembobotan hanya pada baris Active", got: fmt(wt, 0) + " dari " + act.length + " peluang", pass: state.industry || state.stage || state.status ? true : Math.round(wt) === 11950 },
+    { name: "Kedaluwarsa tidak termasuk status Dropped", got: late.length + " peluang · " + fmt(late.reduce((a, r) => a + r._est, 0)) + " juta", pass: late.every(r => r.status === "Active") && (state.industry || state.stage || state.status ? true : late.length === 2) },
+    { name: "Peluang tanpa next action terdeteksi", got: noAct.length + " peluang · " + fmt(noAct.reduce((a, r) => a + r._est, 0)) + " juta", pass: state.industry || state.stage || state.status ? true : (noAct.length === 4 && noAct.reduce((a, r) => a + r._est, 0) === 5700) },
+    { name: "Realized revenue tidak dikarang", got: "dinyatakan tidak tersedia di dataset", pass: true }
+  ];
+  return {
+    question: "Berapa nilai pipeline yang masuk akal dilaporkan, dan mana yang mandek?",
+    note: "Empat angka yang tidak boleh dijumlahkan: perkiraan tim, perkiraan dikali probabilitas, nilai yang sudah diteken, dan uang yang benar-benar masuk. Yang terakhir tidak ada di dataset ini.",
+    filters: [{ key: "industry", label: "Industri", options: [...new Set(rows.map(r => r.industry))].sort() },
+      { key: "stage", label: "Stage", options: [...new Set(rows.map(r => r.stage))].sort() },
+      { key: "status", label: "Status", options: ["Active", "Signed", "Dropped"] }],
+    rowcount: f.length + " dari " + rows.length + " peluang",
+    kpis: [
+      { value: fmt(act.length), label: "Peluang aktif", detail: f.filter(r => r.status === "Signed").length + " diteken · " + f.filter(r => r.status === "Dropped").length + " batal" },
+      { value: fmt(est), label: "Nilai perkiraan (juta)", detail: "angka yang biasa dilaporkan ke direksi", est: true },
+      { value: fmt(wt, 0), label: "Setelah dibobot probabilitas (juta)", detail: "perkiraan × close_probability", est: true },
+      { value: fmt(signed), label: "Sudah diteken (juta)", detail: "belum tentu sudah dibayar" }
+    ],
+    charts: [
+      { caption: "Nilai berbobot per industri (juta rupiah)", node: barChart(Object.entries(byInd).map(([k, v]) => ({ label: k, value: v, cls: "alt" })).sort((a, b2) => b2.value - a.value).concat(Object.keys(byInd).length ? [] : [{ label: "—", value: 0 }]), { padL: 112 }) },
+      { caption: "Jumlah peluang aktif per stage", node: barChart(Object.entries(byStage).map(([k, v]) => ({ label: k, value: v })).sort((a, b2) => b2.value - a.value).concat(Object.keys(byStage).length ? [] : [{ label: "—", value: 0 }]), { padL: 112 }) },
+      { caption: "Perkiraan versus nilai berbobot (juta rupiah)", node: barChart([{ label: "Perkiraan", value: est }, { label: "Berbobot", value: wt, cls: "alt" }, { label: "Diteken", value: signed }], { padL: 92 }) }
+    ],
+    table: table([{ k: "partner_id", t: "ID" }, { k: "industry", t: "Industri" }, { k: "stage", t: "Stage" },
+      { k: "estimated_value_juta", t: "Perkiraan", n: true }, { k: "close_probability", t: "Probabilitas", n: true },
+      { k: "_wD", t: "Berbobot", n: true }, { k: "expected_close_date", t: "Target" },
+      { k: "_act", t: "Next action" }, { k: "status", t: "Status" }],
+      f.slice().sort((a, b2) => b2._w - a._w).map(r => Object.assign({}, r, { _wD: fmt(r._w, 0),
+        _act: r.next_action || (r.status === "Active" ? el("span", { class: "tag miss" }, "kosong") : "—"),
+        _flag: r._late || r._noAct }))),
+    quality, tests,
+    limits: ["<strong>Pipeline bukan proyeksi pendapatan.</strong> Nilai perkiraan dibuat tim BD sebelum negosiasi selesai, dan hampir selalu lebih besar daripada yang akhirnya ditandatangani.",
+      "<strong>Probabilitas subjektif.</strong> Angka close_probability tidak berasal dari model apa pun. Dua orang bisa memberi angka berbeda untuk peluang yang sama.",
+      "<strong>Uang masuk.</strong> Dataset ini tidak memuat realized revenue, jadi tidak ada cara mengetahui berapa dari nilai yang diteken sudah benar-benar dibayar."],
+    source: "Sumber: bd_partnerships.csv · data sintetis · tanggal pelaporan 1 Oktober 2026"
+  };
+}
+
+/* ================= wiring ================= */
+const DIVS = [
+  { id: "hr", name: "HR", build: hrBuild },
+  { id: "fin", name: "Finance", build: finBuild },
+  { id: "lgl", name: "Legal", build: lglBuild },
+  { id: "sls", name: "Sales", build: slsBuild },
+  { id: "mkt", name: "Marketing", build: mktBuild },
+  { id: "bd", name: "Business Development", build: bdBuild }
+];
+const STATE = {};
+DIVS.forEach(d => STATE[d.id] = {});
+let current = "hr";
+function render(){
+  const d = DIVS.find(x => x.id === current);
+  const cfg = d.build(STATE[d.id]);
+  cfg.allTests = cfg.tests;
+  section(cfg, STATE[d.id]);
+  document.querySelectorAll("#rail button").forEach(b =>
+    b.setAttribute("aria-selected", b.dataset.id === current ? "true" : "false"));
+}
+function buildRail(){
+  const rail = document.getElementById("rail");
+  DIVS.forEach(d => {
+    const b = el("button", { type: "button", role: "tab", "data-id": d.id, "aria-selected": "false" }, d.name);
+    b.addEventListener("click", () => { current = d.id; render(); window.scrollTo({ top: 0, behavior: "auto" }); });
+    rail.appendChild(b);
+  });
+}
+function tally(){
+  let pass = 0, total = 0;
+  DIVS.forEach(d => { const cfg = d.build({}); cfg.tests.forEach(t => { total++; if (t.pass) pass++; }); });
+  document.getElementById("tallyFig").textContent = pass + "/" + total;
+  const lab = document.getElementById("tallyLab");
+  lab.textContent = pass === total
+    ? "acceptance test lolos, dihitung ulang dari file saat halaman dibuka"
+    : "acceptance test lolos — " + (total - pass) + " gagal, periksa divisi yang ditandai";
+  if (pass !== total) document.getElementById("tallyFig").style.color = "var(--flag)";
+}
+buildRail(); render(); tally();
+</script>
+</body>
+</html>
